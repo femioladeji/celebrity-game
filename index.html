@@ -14,12 +14,13 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
 <body>
   <h1>Guess the celebrity</h1>
   <img id="image" src="./test.png" />
+  <!-- <img id="image" src="https://randomcelebritygenerator.com/system/celebrities/images/000/001/423/original/1422.jpg" /> -->
+  <canvas id="canvas"></canvas>
   <p id="answer"></p>
 </body>
 <script>
-
-  //Calls DetectFaces API and shows estimated ages of detected faces
-  function DetectFaces(imageData) {
+  //Calls DetectCelebrity API and shows estimated ages of detected faces
+  function DetectCelebrity(imageData) {
     AWS.region = "RegionToUse";
     var rekognition = new AWS.Rekognition();
     var params = {
@@ -30,23 +31,22 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
     rekognition.recognizeCelebrities(params, function (err, data) {
       if (err) console.log(err, err.stack); // an error occurred
       else {
-        const { name } = data.CelebrityFaces[0]
+        const { Name: name } = data.CelebrityFaces[0]
         document.getElementById("answer").innerHTML = name;
       }
     });
   }
-  //Loads selected image and unencodes image bytes for Rekognition DetectFaces API
+
+  //Loads selected image and unencodes image bytes for Rekognition DetectCelebrity API
   function ProcessImage() {
     AnonLog();
     // Load base64 encoded image 
-
     var img = document.getElementById("image");
-    var c = document.createElement("canvas");
+    var c = document.getElementById("canvas");
     var ctx = c.getContext("2d");
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0, 156, 158);
     var image = c.toDataURL();
-    image = image.split("data:image/png;base64,")[1]
-    console.log(image)
+    image = atob(image.split("data:image/png;base64,")[1])
     var length = image.length;
     imageBytes = new ArrayBuffer(length);
     var ua = new Uint8Array(imageBytes);
@@ -54,7 +54,7 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
       ua[i] = image.charCodeAt(i);
     }
     //Call Rekognition  
-    DetectFaces(imageBytes);
+    DetectCelebrity(imageBytes);
   }
 
   ProcessImage()
@@ -78,9 +78,3 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
 </script>
 
 </html>
-
-<!-- Cognito_celebrekogUnauth_Role
-AWS.config.region = ''; // Region
-AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: 'us-east-1:6770e90f-b132-424b-a8d8-cfb843e2592b',
-}); -->
