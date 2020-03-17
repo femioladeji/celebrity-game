@@ -13,7 +13,7 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
 
 <body>
   <h1>Guess the celebrity</h1>
-  <img id="image" src="./test.png" />
+  <img id="image" src="./1422.jpg" />
   <!-- <img id="image" src="https://randomcelebritygenerator.com/system/celebrities/images/000/001/423/original/1422.jpg" /> -->
   <canvas id="canvas"></canvas>
   <p id="answer"></p>
@@ -57,7 +57,8 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
     DetectCelebrity(imageBytes);
   }
 
-  ProcessImage()
+  document.getElementById('image').addEventListener("load", ProcessImage)
+  
 
   //Provides anonymous log on to AWS services
   function AnonLog() {
