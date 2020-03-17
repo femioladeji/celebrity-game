@@ -4,6 +4,7 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
 -->
 <!DOCTYPE html>
 <html>
+
 <head>
   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.641.0.min.js"></script>
   <meta charset="UTF-8">
@@ -12,15 +13,11 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
 
 <body>
   <h1>Guess the celebrity</h1>
-  <img src="https://www.randomlists.com/img/people/dwayne_johnson.webp" />
-  <p></p>
+  <img id="image" src="./test.png" />
+  <p id="answer"></p>
 </body>
 <script>
 
-  document.getElementById("fileToUpload").addEventListener("change", function (event) {
-    ProcessImage();
-  }, false);
-  
   //Calls DetectFaces API and shows estimated ages of detected faces
   function DetectFaces(imageData) {
     AWS.region = "RegionToUse";
@@ -33,61 +30,38 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
     rekognition.recognizeCelebrities(params, function (err, data) {
       if (err) console.log(err, err.stack); // an error occurred
       else {
-       var table = "<table><tr><th>Low</th><th>High</th></tr>";
-        // show each face and build out estimated age table
-        for (var i = 0; i < data.FaceDetails.length; i++) {
-          table += '<tr><td>' + data.FaceDetails[i].AgeRange.Low +
-            '</td><td>' + data.FaceDetails[i].AgeRange.High + '</td></tr>';
-        }
-        table += "</table>";
-        document.getElementById("opResult").innerHTML = table;
+        const { name } = data.CelebrityFaces[0]
+        document.getElementById("answer").innerHTML = name;
       }
     });
   }
   //Loads selected image and unencodes image bytes for Rekognition DetectFaces API
   function ProcessImage() {
     AnonLog();
-    var control = document.getElementById("fileToUpload");
-    var file = control.files[0];
-
     // Load base64 encoded image 
-    var reader = new FileReader();
-    reader.onload = (function (theFile) {
-      return function (e) {
-        var img = document.createElement('img');
-        var image = null;
-        img.src = e.target.result;
-        var jpg = true;
-        try {
-          image = atob(e.target.result.split("data:image/jpeg;base64,")[1]);
 
-        } catch (e) {
-          jpg = false;
-        }
-        if (jpg == false) {
-          try {
-            image = atob(e.target.result.split("data:image/png;base64,")[1]);
-          } catch (e) {
-            alert("Not an image file Rekognition can process");
-            return;
-          }
-        }
-        //unencode image bytes for Rekognition DetectFaces API 
-        var length = image.length;
-        imageBytes = new ArrayBuffer(length);
-        var ua = new Uint8Array(imageBytes);
-        for (var i = 0; i < length; i++) {
-          ua[i] = image.charCodeAt(i);
-        }
-        //Call Rekognition  
-        DetectFaces(imageBytes);
-      };
-    })(file);
-    reader.readAsDataURL(file);
+    var img = document.getElementById("image");
+    var c = document.createElement("canvas");
+    var ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    var image = c.toDataURL();
+    image = image.split("data:image/png;base64,")[1]
+    console.log(image)
+    var length = image.length;
+    imageBytes = new ArrayBuffer(length);
+    var ua = new Uint8Array(imageBytes);
+    for (var i = 0; i < length; i++) {
+      ua[i] = image.charCodeAt(i);
+    }
+    //Call Rekognition  
+    DetectFaces(imageBytes);
   }
+
+  ProcessImage()
+
   //Provides anonymous log on to AWS services
   function AnonLog() {
-    
+
     // Configure the credentials provider to use your identity pool
     AWS.config.region = 'us-east-1'; // Region
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
@@ -102,6 +76,7 @@ PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazo
     });
   }
 </script>
+
 </html>
 
 <!-- Cognito_celebrekogUnauth_Role
